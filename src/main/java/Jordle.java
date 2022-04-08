@@ -1,0 +1,308 @@
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Button;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Line;
+import javafx.scene.text.Text;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.FontPosture;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
+import javafx.scene.image.Image;
+
+public class Jordle extends Application {
+    final Color defaultColor = Color.rgb(18, 18, 19);
+    final Color incorrectColor = Color.rgb(86, 87, 88);
+    final Color correctColor = Color.rgb(83, 141, 78);
+    final Color includedColor = Color.rgb(181, 159, 59);
+
+    final Color hcCorrectColor = Color.rgb(245, 121, 58);
+    final Color hcIncludedColor = Color.rgb(133, 192, 249);
+
+    boolean highContrast = false;
+    boolean darkMode = true;
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        // Main Stage
+        primaryStage.setTitle("Jordle");
+        primaryStage.getIcons().add(new Image("https://i.imgur.com/V2WmpOw.png"));
+
+        BorderPane mainPane = new BorderPane();
+        mainPane.setStyle(darkMode ? "-fx-background-color: rgb(18, 18, 19);" : "-fx-background-color: WHITE;");
+        GridPane grid = new GridPane(); // Center
+        HBox headerBox = new HBox();
+
+        Scene scene = new Scene(mainPane, 960, 960);
+
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.show();
+
+        // Header
+        mainPane.setTop(headerBox);
+        headerBox.setStyle("-fx-border-color: transparent transparent rgb(58, 58, 60) transparent;");
+        headerBox.setSpacing(50);
+
+        // Instructions Button
+        Button instrButton = new Button("Instructions");
+        headerBox.getChildren().add(instrButton);
+
+        // Instructions Stage
+        Stage instructionStage = new Stage();
+        instructionStage.getIcons().add(new Image("https://i.imgur.com/V2WmpOw.png"));
+        instructionStage.setTitle("Instructions");
+        instructionStage.setResizable(false);
+
+        VBox instructionsText = new VBox();
+        instructionsText.setPadding(new Insets(10, 5, 30, 5));
+        instructionsText.setSpacing(10);
+
+        Scene instructionScene = new Scene(instructionsText, 505, 505);
+        instructionsText.setStyle(darkMode ? "-fx-background-color: rgb(18, 18, 19);" : "-fx-background-color: WHITE");
+
+        HBox howToPlayBox = new HBox();
+        howToPlayBox.setPadding(new Insets(0, 5, 0, 5));
+        howToPlayBox.setSpacing(10);
+        howToPlayBox.setAlignment(Pos.CENTER);
+
+
+        Text howToPlay = new Text("HOW TO PLAY");
+        howToPlay.setFont(Font.font("Helvetica",FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 18));
+        howToPlay.setFill(darkMode ? Color.WHITE : Color.BLACK);
+        howToPlayBox.getChildren().add(howToPlay);
+        instructionsText.getChildren().add(howToPlayBox);
+
+        Text instructionsWords1 = new Text("Guess the JORDLE in six tries.");
+        instructionsWords1.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        instructionsWords1.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+        Text instructionsWords2 = new Text(
+                "Each guess must be a valid five-letter word. Hit the enter button to submit.");
+        instructionsWords2.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        instructionsWords2.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+
+        Text instructionsWords3 = new Text(
+                "After each guess, the color of the tiles will change to show how close your\nguess was to the word.");
+        instructionsWords3.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        instructionsWords3.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+        instructionsText.getChildren().addAll(instructionsWords1, instructionsWords2, instructionsWords3);
+
+        Line spacer = new Line(0, 250, 495, 250);
+        spacer.setStroke(incorrectColor);
+
+        Text examples = new Text("Examples");
+        examples.setFont(Font.font("Helvetica",FontWeight.BOLD, FontPosture.REGULAR, 15));
+        examples.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+        Text wearyText = new Text("The Letter W is in the word and in the correct spot.");
+        wearyText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        wearyText.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+        Text pillsText = new Text("The letter I is in the word but in the wrong spot.");
+        pillsText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        pillsText.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+        Text vagueText = new Text("None of the letters are in the word.");
+        vagueText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        vagueText.setFill(darkMode ? Color.WHITE : Color.BLACK);
+
+        instructionsText.getChildren().addAll(spacer, examples,
+                newWord("WEARY", new int[] {1, 2, 3, 4}, new int[] {0}, new int[] {}), wearyText,
+                newWord("PILLS", new int[] {0, 2, 3, 4}, new int[] {}, new int[] {1}), pillsText,
+                newWord("VAGUE", new int[] {0, 1, 2, 3, 4}, new int[] {}, new int[] {}), vagueText);
+
+        // Anonymous Class for Instructions Button
+        instrButton.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                instructionStage.setScene(instructionScene);
+                instructionStage.show();
+            }
+        });
+
+        instrButton.disableProperty().bind(instructionStage.showingProperty());
+
+        // Header Title
+        Text headerText = new Text("Jordle");
+        headerText.setFont(Font.font("Helvetica", FontWeight.BOLD, FontPosture.REGULAR, 50));
+        headerText.setFill(darkMode ? Color.WHITE : Color.BLACK);
+        headerBox.getChildren().add(headerText);
+        headerBox.setAlignment(Pos.CENTER);
+
+        //Settings Button
+        Button settingsButton = new Button("Settings");
+        headerBox.getChildren().add(settingsButton);
+
+        // Settings Stage
+        Stage settingsStage = new Stage();
+        settingsStage.getIcons().add(new Image("https://i.imgur.com/yUk0qmP.png"));
+        settingsStage.setTitle("Settings");
+        settingsStage.setResizable(false);
+
+        VBox mainSettingsBox = new VBox();
+        mainSettingsBox.setPadding(new Insets(10, 5, 30, 5));
+        mainSettingsBox.setSpacing(10);
+
+        Scene settingsScene = new Scene(mainSettingsBox, 210, 200);
+        mainSettingsBox.setStyle(darkMode ? "-fx-background-color: rgb(18, 18, 19);" : "-fx-background-color: WHITE");
+        settingsStage.setScene(settingsScene);
+
+        HBox lightModeBox = new HBox();
+        lightModeBox.setPadding(new Insets(10, 5, 30, 5));
+        lightModeBox.setSpacing(10);
+        RadioButton lightModeButton = new RadioButton();
+        lightModeButton.setSelected(!darkMode);
+        Text darkModeText = new Text("Light Mode");
+        darkModeText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        darkModeText.setFill(darkMode ? Color.WHITE : Color.BLACK);
+        lightModeBox.getChildren().addAll(lightModeButton, darkModeText);
+
+        mainSettingsBox.getChildren().add(lightModeBox);
+
+        HBox highContrastBox = new HBox();
+        highContrastBox.setPadding(new Insets(10, 5, 30, 5));
+        highContrastBox.setSpacing(10);
+        RadioButton highContrastButton = new RadioButton();
+        highContrastButton.setSelected(highContrast);
+        Text highContrastText = new Text("High Contrast Mode");
+        highContrastText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        highContrastText.setFill(darkMode ? Color.WHITE : Color.BLACK);
+        highContrastBox.getChildren().addAll(highContrastButton, highContrastText);
+
+        mainSettingsBox.getChildren().add(highContrastBox);
+
+        HBox warningBox = new HBox();
+        Text warning = new Text("Selecting these settings will\nRESET the current game.");
+        warning.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        warning.setFill(Color.RED);
+        warningBox.getChildren().add(warning);
+        warningBox.setAlignment(Pos.CENTER_LEFT);
+
+        mainSettingsBox.getChildren().add(warning);
+
+        // Lambda Expression for Settings Button
+        settingsButton.setOnAction(e -> {
+            settingsStage.setScene(settingsScene);
+            settingsStage.show();
+        });
+
+        settingsButton.disableProperty().bind(settingsStage.showingProperty());
+
+        // Lambda Expression for Darkmode Button
+        lightModeButton.setOnAction(e -> {
+            primaryStage.hide();
+            settingsStage.hide();
+            instructionStage.hide();
+            darkMode = !darkMode;
+            start(primaryStage);
+        });
+
+        // Lambda Expression for High Contrast Button
+        highContrastButton.setOnAction(e -> {
+            primaryStage.hide();
+            settingsStage.hide();
+            instructionStage.hide();
+            highContrast = !highContrast;
+            start(primaryStage);
+        });
+
+
+        // Grid setup
+        mainPane.setCenter(grid);
+        grid.setAlignment(Pos.CENTER); // Position grid in the center of the center node of BorderPane.
+        for (int c = 0; c < 5; c++) {
+            for (int r = 0; r < 6; r++) {
+                grid.add(newRectangle(1, '\u0000'), c, r);
+            }
+        }
+        grid.setHgap(5.0);
+        grid.setVgap(5.0);
+
+        // Bottom of Primary Stage
+        HBox bottomBox = new HBox();
+        bottomBox.setAlignment(Pos.CENTER);
+        bottomBox.setPadding(new Insets(0, 20, 100, 20));
+        Text tryMessage = new Text("Try guessing a word!");
+        tryMessage.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        tryMessage.setFill(darkMode ? Color.WHITE : Color.BLACK);
+        bottomBox.getChildren().add(tryMessage);
+
+        mainPane.setBottom(bottomBox);
+    }
+
+    public StackPane newRectangle(int type, char letter) {
+        StackPane letterOnRectangle = new StackPane();
+        Rectangle rec = new Rectangle(60, 60);
+        try {
+            if (type == 1) { // Empty
+                rec.setStroke(incorrectColor);
+                rec.setStrokeWidth(1.5);
+                rec.setFill(darkMode ? defaultColor : Color.WHITE);
+            }
+            if (type == 2) { // Incorrect Letter
+                rec.setStroke(incorrectColor);
+                rec.setStrokeWidth(1.5);
+                rec.setFill(incorrectColor);
+            }
+            if (type == 3) {// Correct Letter
+                rec.setFill(highContrast ? hcCorrectColor : correctColor);
+                rec.setStroke(highContrast ? hcCorrectColor : correctColor);
+                rec.setStrokeWidth(1.5);
+            }
+            if (type == 4) { // Close Letter
+                rec.setFill(highContrast ? hcIncludedColor : includedColor);
+                rec.setFill(highContrast ? hcIncludedColor : includedColor);
+                rec.setStrokeWidth(1.5);
+            }
+            Text character = new Text(Character.toString(letter));
+            character.setFont(Font.font("Helvetica", FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 30));
+            character.setFill(darkMode ? Color.WHITE : Color.BLACK);
+            letterOnRectangle.getChildren().addAll(rec, character);
+            return letterOnRectangle;
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(type + " is not a valid rectangle type!");
+        }
+    }
+
+    public GridPane newWord(String word, int[] indexWrong, int[] indexRight, int[] indexClose) {
+        if (word.length() == 5) {
+            GridPane grid = new GridPane();
+            grid.setHgap(5.0);
+            grid.setVgap(5.0);
+            for (int i = 0; i < word.length(); i++) {
+                for (int value : indexWrong) {
+                    if (i == value) {
+                        grid.add(newRectangle(2, word.charAt(i)), i, 0);
+                    }
+                }
+                for (int k : indexRight) {
+                    if (i == k) {
+                        grid.add(newRectangle(3, word.charAt(i)), i, 0);
+                    }
+                }
+                for (int j : indexClose) {
+                    if (i == j) {
+                        grid.add(newRectangle(4, word.charAt(i)), i, 0);
+                    }
+                }
+            }
+            return grid;
+        } else {
+            return new GridPane();
+        }
+    }
+}
