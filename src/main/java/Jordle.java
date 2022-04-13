@@ -1,5 +1,7 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -8,6 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.paint.Color;
@@ -32,6 +35,12 @@ public class Jordle extends Application {
 
     boolean highContrast = false;
     boolean darkMode = true;
+    int row = 0;
+    int column = 0;
+    int lettersInRow = 0;
+
+    String guess = "";
+    String correctWord = Words.list.get((int)(Math.random() * Words.list.size())).toUpperCase();
 
     @Override
     public void start(Stage primaryStage) {
@@ -58,7 +67,15 @@ public class Jordle extends Application {
 
         // Instructions Button
         Button instrButton = new Button("Instructions");
+        instrButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
+        instrButton.setOnMouseEntered(e -> {
+            instrButton.setStyle("-fx-hover: #3b3b3b; -fx-border: none; -fx-text-fill: black;");
+        });
+        instrButton.setOnMouseExited(e -> {
+            instrButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
+        });
         headerBox.getChildren().add(instrButton);
+        instrButton.setFocusTraversable(false);
 
         // Instructions Stage
         Stage instructionStage = new Stage();
@@ -122,9 +139,9 @@ public class Jordle extends Application {
         vagueText.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         instructionsText.getChildren().addAll(spacer, examples,
-                newWord("WEARY", new int[] {1, 2, 3, 4}, new int[] {0}, new int[] {}), wearyText,
-                newWord("PILLS", new int[] {0, 2, 3, 4}, new int[] {}, new int[] {1}), pillsText,
-                newWord("VAGUE", new int[] {0, 1, 2, 3, 4}, new int[] {}, new int[] {}), vagueText);
+                newWord("WEARY", new int[] {1, 2, 3, 4}, new int[] {0}, new int[] {}, 0), wearyText,
+                newWord("PILLS", new int[] {0, 2, 3, 4}, new int[] {}, new int[] {1}, 0), pillsText,
+                newWord("VAGUE", new int[] {0, 1, 2, 3, 4}, new int[] {}, new int[] {}, 0), vagueText);
 
         // Anonymous Class for Instructions Button
         instrButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -145,7 +162,15 @@ public class Jordle extends Application {
 
         //Settings Button
         Button settingsButton = new Button("Settings");
+        settingsButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
+        settingsButton.setOnMouseEntered(e -> {
+            settingsButton.setStyle("-fx-hover: #3b3b3b; -fx-border: none; -fx-text-fill: black;");
+        });
+        settingsButton.setOnMouseExited(e -> {
+            settingsButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
+        });
         headerBox.getChildren().add(settingsButton);
+        settingsButton.setFocusTraversable(false);
 
         // Settings Stage
         Stage settingsStage = new Stage();
@@ -208,6 +233,7 @@ public class Jordle extends Application {
             settingsStage.hide();
             instructionStage.hide();
             darkMode = !darkMode;
+            reset();
             start(primaryStage);
         });
 
@@ -217,6 +243,7 @@ public class Jordle extends Application {
             settingsStage.hide();
             instructionStage.hide();
             highContrast = !highContrast;
+            reset();
             start(primaryStage);
         });
 
@@ -233,15 +260,105 @@ public class Jordle extends Application {
         grid.setVgap(5.0);
 
         // Bottom of Primary Stage
-        HBox bottomBox = new HBox();
+        VBox bottomBox = new VBox();
         bottomBox.setAlignment(Pos.CENTER);
         bottomBox.setPadding(new Insets(0, 20, 100, 20));
+        bottomBox.setSpacing(100);
+
+        Button resetButton = new Button("Reset");
+        resetButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
+        resetButton.setOnMouseEntered(e -> {
+            resetButton.setStyle("-fx-hover: #3b3b3b; -fx-border: none; -fx-text-fill: black;");
+        });
+        resetButton.setOnMouseExited(e -> {
+            resetButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
+        });
+        bottomBox.getChildren().add(resetButton);
+        resetButton.setFocusTraversable(false);
+
+        resetButton.setOnAction(e -> {
+            primaryStage.hide();
+            instructionStage.hide();
+            settingsStage.hide();
+
+            reset();
+
+            start(primaryStage);
+
+        });
+
         Text tryMessage = new Text("Try guessing a word!");
         tryMessage.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
         tryMessage.setFill(darkMode ? Color.WHITE : Color.BLACK);
         bottomBox.getChildren().add(tryMessage);
 
         mainPane.setBottom(bottomBox);
+
+        // Game Functionality
+        scene.setOnKeyPressed(e -> {
+            char letterGuess = e.getCode().getName().charAt(0);
+            if (lettersInRow < 5 && e.getCode().isLetterKey()) { // Typing Letters
+                grid.add(newRectangle(1, letterGuess), column, row);
+                guess += letterGuess;
+                ++lettersInRow;
+                ++column;
+            } else if (lettersInRow > 0 && lettersInRow <= 5 && e.getCode() == KeyCode.BACK_SPACE) { //Deleting Letters
+                grid.add(newRectangle(1, '\u0000'), column - 1, row);
+                guess = guess.substring(0, guess.length() - 1);
+                --lettersInRow;
+                --column;
+            } else if(e.getCode() == KeyCode.ENTER) { // Guessing Words
+                if (lettersInRow == 5) { // Valid Guess
+                    if (guess.equals(correctWord)) { // Correct Guess
+                        grid.add(newRectangle(3, correctWord.charAt(0)), 0, row);
+                        grid.add(newRectangle(3, correctWord.charAt(1)), 1, row);
+                        grid.add(newRectangle(3, correctWord.charAt(2)), 2, row);
+                        grid.add(newRectangle(3, correctWord.charAt(3)), 3, row);
+                        grid.add(newRectangle(3, correctWord.charAt(4)), 4, row);
+                        tryMessage.setText("Congratulations! You guessed the correct word!");
+                        tryMessage.setFill(Color.LIMEGREEN);
+                    } else { // Incorrect Guess
+                        if (row == 5) { // Final Guess
+                            grid.add(newRectangle(2, guess.charAt(0)), 0, row);
+                            grid.add(newRectangle(2, guess.charAt(1)), 1, row);
+                            grid.add(newRectangle(2, guess.charAt(2)), 2, row);
+                            grid.add(newRectangle(2, guess.charAt(3)), 3, row);
+                            grid.add(newRectangle(2, guess.charAt(4)), 4, row);
+                            tryMessage.setText("GAME OVER! The word was " + correctWord);
+                            tryMessage.setFill(Color.RED);
+                        } else {
+                            for (int i = 0; i < 5; i++) {
+                                if (guess.charAt(i) == correctWord.charAt(i)) {
+                                    grid.add(newRectangle(3, guess.charAt(i)), i, row);
+                                } else if (correctWord.contains(String.valueOf(guess.charAt(i)))) {
+                                    grid.add(newRectangle(4, guess.charAt(i)), i, row);
+                                } else {
+                                    grid.add(newRectangle(2, guess.charAt(i)), i, row);
+                                }
+                            }
+                            guess = "";
+                            lettersInRow = 0;
+                            column = 0;
+                            ++row;
+                            System.out.println(row);
+                        }
+                    }
+                } else { // Invalid Guess
+                    Alert invalidGuessAlert = new Alert(Alert.AlertType.ERROR, "You must guess a five letter word!",
+                            ButtonType.CLOSE);
+                    invalidGuessAlert.show();
+                }
+            }
+        });
+
+    }
+
+    public void reset() {
+        this.row = 0;
+        this.column = 0;
+        this.lettersInRow = 0;
+        this.guess = "";
+        this.correctWord = Words.list.get((int)(Math.random() * Words.list.size())).toUpperCase();
     }
 
     public StackPane newRectangle(int type, char letter) {
@@ -278,7 +395,7 @@ public class Jordle extends Application {
         }
     }
 
-    public GridPane newWord(String word, int[] indexWrong, int[] indexRight, int[] indexClose) {
+    public GridPane newWord(String word, int[] indexWrong, int[] indexRight, int[] indexClose, int row) {
         if (word.length() == 5) {
             GridPane grid = new GridPane();
             grid.setHgap(5.0);
@@ -286,17 +403,17 @@ public class Jordle extends Application {
             for (int i = 0; i < word.length(); i++) {
                 for (int value : indexWrong) {
                     if (i == value) {
-                        grid.add(newRectangle(2, word.charAt(i)), i, 0);
+                        grid.add(newRectangle(2, word.charAt(i)), i, row);
                     }
                 }
                 for (int k : indexRight) {
                     if (i == k) {
-                        grid.add(newRectangle(3, word.charAt(i)), i, 0);
+                        grid.add(newRectangle(3, word.charAt(i)), i, row);
                     }
                 }
                 for (int j : indexClose) {
                     if (i == j) {
-                        grid.add(newRectangle(4, word.charAt(i)), i, 0);
+                        grid.add(newRectangle(4, word.charAt(i)), i, row);
                     }
                 }
             }
