@@ -24,6 +24,11 @@ import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 
+/**
+ * This class defines the game Jordle. A word-guessing game based on the game Wordle.
+ * @author Michael Hammond
+ * @version 1.32
+ */
 public class Jordle extends Application {
     final Color defaultColor = Color.rgb(18, 18, 19);
     final Color incorrectColor = Color.rgb(86, 87, 88);
@@ -40,8 +45,12 @@ public class Jordle extends Application {
     int lettersInRow = 0;
 
     String guess = "";
-    String correctWord = Words.list.get((int)(Math.random() * Words.list.size())).toUpperCase();
+    String correctWord = Words.list.get((int) (Math.random() * Words.list.size())).toUpperCase();
 
+    /**
+     * This method starts the game window. It overrides the start method from Application.
+     * @param primaryStage Main stage that the game window is displayed on.
+     */
     @Override
     public void start(Stage primaryStage) {
 
@@ -97,24 +106,24 @@ public class Jordle extends Application {
 
 
         Text howToPlay = new Text("HOW TO PLAY");
-        howToPlay.setFont(Font.font("Helvetica",FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 18));
+        howToPlay.setFont(Font.font("Helvetica", FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 18));
         howToPlay.setFill(darkMode ? Color.WHITE : Color.BLACK);
         howToPlayBox.getChildren().add(howToPlay);
         instructionsText.getChildren().add(howToPlayBox);
 
         Text instructionsWords1 = new Text("Guess the JORDLE in six tries.");
-        instructionsWords1.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        instructionsWords1.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         instructionsWords1.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         Text instructionsWords2 = new Text(
                 "Each guess must be a valid five-letter word. Hit the enter button to submit.");
-        instructionsWords2.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        instructionsWords2.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         instructionsWords2.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
 
         Text instructionsWords3 = new Text(
                 "After each guess, the color of the tiles will change to show how close your\nguess was to the word.");
-        instructionsWords3.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        instructionsWords3.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         instructionsWords3.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         instructionsText.getChildren().addAll(instructionsWords1, instructionsWords2, instructionsWords3);
@@ -123,27 +132,27 @@ public class Jordle extends Application {
         spacer.setStroke(incorrectColor);
 
         Text examples = new Text("Examples");
-        examples.setFont(Font.font("Helvetica",FontWeight.BOLD, FontPosture.REGULAR, 15));
+        examples.setFont(Font.font("Helvetica", FontWeight.BOLD, FontPosture.REGULAR, 15));
         examples.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         Text wearyText = new Text("The Letter W is in the word and in the correct spot.");
-        wearyText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        wearyText.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         wearyText.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         Text pillsText = new Text("The letter I is in the word but in the wrong spot.");
-        pillsText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        pillsText.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         pillsText.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         Text vagueText = new Text("None of the letters are in the word.");
-        vagueText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        vagueText.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         vagueText.setFill(darkMode ? Color.WHITE : Color.BLACK);
 
         instructionsText.getChildren().addAll(spacer, examples,
-                newWord("WEARY", new int[] {1, 2, 3, 4}, new int[] {0}, new int[] {}, 0), wearyText,
-                newWord("PILLS", new int[] {0, 2, 3, 4}, new int[] {}, new int[] {1}, 0), pillsText,
-                newWord("VAGUE", new int[] {0, 1, 2, 3, 4}, new int[] {}, new int[] {}, 0), vagueText);
+                newWord("WEARY", new int[] {1, 2, 3, 4}, new int[] {0}, new int[] {}), wearyText,
+                newWord("PILLS", new int[] {0, 2, 3, 4}, new int[] {}, new int[] {1}), pillsText,
+                newWord("VAGUE", new int[] {0, 1, 2, 3, 4}, new int[] {}, new int[] {}), vagueText);
 
-        // Anonymous Class for Instructions Button
+        // Anonymous Inner Class for Instructions Button
         instrButton.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 instructionStage.setScene(instructionScene);
@@ -190,9 +199,10 @@ public class Jordle extends Application {
         lightModeBox.setPadding(new Insets(10, 5, 30, 5));
         lightModeBox.setSpacing(10);
         RadioButton lightModeButton = new RadioButton();
+        lightModeButton.setFocusTraversable(false);
         lightModeButton.setSelected(!darkMode);
         Text darkModeText = new Text("Light Mode");
-        darkModeText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        darkModeText.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         darkModeText.setFill(darkMode ? Color.WHITE : Color.BLACK);
         lightModeBox.getChildren().addAll(lightModeButton, darkModeText);
 
@@ -202,17 +212,18 @@ public class Jordle extends Application {
         highContrastBox.setPadding(new Insets(10, 5, 30, 5));
         highContrastBox.setSpacing(10);
         RadioButton highContrastButton = new RadioButton();
+        highContrastButton.setFocusTraversable(false);
         highContrastButton.setSelected(highContrast);
         Text highContrastText = new Text("High Contrast Mode");
-        highContrastText.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        highContrastText.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         highContrastText.setFill(darkMode ? Color.WHITE : Color.BLACK);
         highContrastBox.getChildren().addAll(highContrastButton, highContrastText);
 
         mainSettingsBox.getChildren().add(highContrastBox);
 
         HBox warningBox = new HBox();
-        Text warning = new Text("Selecting these settings will\nRESET the current game.");
-        warning.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        Text warning = new Text("Selecting these settings will\nRESTART the current game.");
+        warning.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         warning.setFill(Color.RED);
         warningBox.getChildren().add(warning);
         warningBox.setAlignment(Pos.CENTER_LEFT);
@@ -247,7 +258,6 @@ public class Jordle extends Application {
             start(primaryStage);
         });
 
-
         // Grid setup
         mainPane.setCenter(grid);
         grid.setAlignment(Pos.CENTER); // Position grid in the center of the center node of BorderPane.
@@ -265,7 +275,7 @@ public class Jordle extends Application {
         bottomBox.setPadding(new Insets(0, 20, 100, 20));
         bottomBox.setSpacing(100);
 
-        Button resetButton = new Button("Reset");
+        Button resetButton = new Button("Restart");
         resetButton.setStyle("-fx-background-color: #909098; -fx-border: none; -fx-text-fill: white;");
         resetButton.setOnMouseEntered(e -> {
             resetButton.setStyle("-fx-hover: #3b3b3b; -fx-border: none; -fx-text-fill: black;");
@@ -288,7 +298,7 @@ public class Jordle extends Application {
         });
 
         Text tryMessage = new Text("Try guessing a word!");
-        tryMessage.setFont(Font.font("Helvetica",FontWeight.NORMAL, FontPosture.REGULAR, 15));
+        tryMessage.setFont(Font.font("Helvetica", FontWeight.NORMAL, FontPosture.REGULAR, 15));
         tryMessage.setFill(darkMode ? Color.WHITE : Color.BLACK);
         bottomBox.getChildren().add(tryMessage);
 
@@ -307,7 +317,7 @@ public class Jordle extends Application {
                 guess = guess.substring(0, guess.length() - 1);
                 --lettersInRow;
                 --column;
-            } else if(e.getCode() == KeyCode.ENTER) { // Guessing Words
+            } else if (e.getCode() == KeyCode.ENTER) { // Guessing Words
                 if (lettersInRow == 5) { // Valid Guess
                     if (guess.equals(correctWord)) { // Correct Guess
                         grid.add(newRectangle(3, correctWord.charAt(0)), 0, row);
@@ -324,7 +334,7 @@ public class Jordle extends Application {
                             grid.add(newRectangle(2, guess.charAt(2)), 2, row);
                             grid.add(newRectangle(2, guess.charAt(3)), 3, row);
                             grid.add(newRectangle(2, guess.charAt(4)), 4, row);
-                            tryMessage.setText("GAME OVER! The word was " + correctWord);
+                            tryMessage.setText("GAME OVER! The word was " + correctWord + ".");
                             tryMessage.setFill(Color.RED);
                         } else {
                             for (int i = 0; i < 5; i++) {
@@ -353,14 +363,25 @@ public class Jordle extends Application {
 
     }
 
+    /**
+     * This method resets the variables row, column, lettersInRow, guess to their default values and picks a new
+     * correctWord at random.
+     */
     public void reset() {
         this.row = 0;
         this.column = 0;
         this.lettersInRow = 0;
         this.guess = "";
-        this.correctWord = Words.list.get((int)(Math.random() * Words.list.size())).toUpperCase();
+        this.correctWord = Words.list.get((int) (Math.random() * Words.list.size())).toUpperCase();
     }
 
+    /**
+     * This method creates a rectangle in the form of a StackPane that will be displayed in different colors based on
+     * their letter.
+     * @param type The type of rectangle to be created: empty, correct, incorrect, included.
+     * @param letter The letter that will be displayed inside the rectangle.
+     * @return Returns a StackPane of a colored rectangle with a letter in the middle.
+     */
     public StackPane newRectangle(int type, char letter) {
         StackPane letterOnRectangle = new StackPane();
         Rectangle rec = new Rectangle(60, 60);
@@ -375,7 +396,7 @@ public class Jordle extends Application {
                 rec.setStrokeWidth(1.5);
                 rec.setFill(incorrectColor);
             }
-            if (type == 3) {// Correct Letter
+            if (type == 3) { // Correct Letter
                 rec.setFill(highContrast ? hcCorrectColor : correctColor);
                 rec.setStroke(highContrast ? hcCorrectColor : correctColor);
                 rec.setStrokeWidth(1.5);
@@ -395,7 +416,15 @@ public class Jordle extends Application {
         }
     }
 
-    public GridPane newWord(String word, int[] indexWrong, int[] indexRight, int[] indexClose, int row) {
+    /**
+     * This method creates a series of rectangles to be displayed next to each other.
+     * @param word Word that rectangles will spell out.
+     * @param indexWrong Indices of letters not in the correct word.
+     * @param indexRight Indices of letters in the correct word and in the correct spot.
+     * @param indexClose Indices of letters in the correct word but not in the correct spot.
+     * @return Returns a series of colored rectangles with letters in the middle that form a word.
+     */
+    public GridPane newWord(String word, int[] indexWrong, int[] indexRight, int[] indexClose) {
         if (word.length() == 5) {
             GridPane grid = new GridPane();
             grid.setHgap(5.0);
@@ -403,17 +432,17 @@ public class Jordle extends Application {
             for (int i = 0; i < word.length(); i++) {
                 for (int value : indexWrong) {
                     if (i == value) {
-                        grid.add(newRectangle(2, word.charAt(i)), i, row);
+                        grid.add(newRectangle(2, word.charAt(i)), i, 0);
                     }
                 }
                 for (int k : indexRight) {
                     if (i == k) {
-                        grid.add(newRectangle(3, word.charAt(i)), i, row);
+                        grid.add(newRectangle(3, word.charAt(i)), i, 0);
                     }
                 }
                 for (int j : indexClose) {
                     if (i == j) {
-                        grid.add(newRectangle(4, word.charAt(i)), i, row);
+                        grid.add(newRectangle(4, word.charAt(i)), i, 0);
                     }
                 }
             }
